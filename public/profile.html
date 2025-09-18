@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile | CodeForge Academy</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      color: white;
+      overflow: hidden;
+    }
+
+    /* Tech background */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: url("https://images.unsplash.com/photo-1518770660439-4636190af475") no-repeat center center/cover;
+      filter: blur(10px) brightness(0.4);
+      z-index: -1;
+    }
+
+    .profile-box {
+      background: rgba(26, 26, 26, 0.85);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.7);
+      width: 800px;
+      max-width: 95%;
+      display: flex;
+      gap: 20px;
+      backdrop-filter: blur(12px);
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(30px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    /* Left Column */
+    .left {
+      flex: 1;
+      text-align: center;
+    }
+
+    .profile-pic {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: #333;
+      margin: 0 auto 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 40px;
+      color: #777;
+      border: 3px solid #ff4d4d;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .profile-pic:hover {
+      transform: scale(1.05);
+    }
+    .profile-pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    input[type="file"] {
+      display: none;
+    }
+
+    .left h2 {
+      margin: 10px 0;
+      color: #ff4d4d; /* Red name heading */
+    }
+
+    .profile-info {
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    /* Right Column */
+    .right {
+      flex: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 15px;
+      border-radius: 12px;
+    }
+
+    .section h3 {
+      margin-bottom: 8px;
+      color: #ff4d4d; /* All section headings red */
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #ff0000;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 12px;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .btn:hover {
+      background: #cc0000;
+    }
+
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+    .theme-toggle input {
+      transform: scale(1.3);
+      cursor: pointer;
+    }
+
+    /* Responsive */
+    @media(max-width: 768px) {
+      .profile-box {
+        flex-direction: column;
+        align-items: center;
+      }
+      .right {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-box">
+    <!-- Left Column -->
+    <div class="left">
+      <label for="avatarUpload">
+        <div class="profile-pic" id="profilePic">👤</div>
+      </label>
+      <input type="file" id="avatarUpload" accept="image/*">
+
+      <!-- Dynamic user name -->
+      <h2 id="userTitle">User Name</h2>
+      <div class="profile-info">
+        <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+      </div>
+      <button class="btn" onclick="editProfile()">✏️ Edit Profile</button>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right">
+      <div class="section">
+        <h3>💳 Payment</h3>
+        <p>Access premium sessions and resources.</p>
+        <button class="btn" onclick="payNow()">Pay & Unlock</button>
+      </div>
+
+      <div class="section">
+        <h3>🎨 Personalization</h3>
+        <div class="theme-toggle">
+          <label for="darkMode">Dark Mode</label>
+          <input type="checkbox" id="darkMode">
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>⚙️ Settings</h3>
+        <p><a href="#">🔑 Change Password</a></p>
+        <p><a href="#">🔔 Notifications</a></p>
+        <p><a href="#">🛡 Privacy</a></p>
+      </div>
+
+      <button class="btn" onclick="logout()">🚪 Logout</button>
+      <a href="welcome.html" class="btn">⬅ Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!token || !user) {
+      alert("⚠️ You must log in first!");
+      window.location.href = "login.html";
+    } else {
+      document.getElementById("profileEmail").textContent = user.email;
+      document.getElementById("userTitle").textContent = user.name;
+
+      // Load avatar or initials
+      const avatarData = localStorage.getItem("avatar");
+      const profilePic = document.getElementById("profilePic");
+      if (avatarData) {
+        profilePic.innerHTML = `<img src="${avatarData}" alt="Avatar">`;
+      } else {
+        profilePic.textContent = user.name ? user.name.charAt(0).toUpperCase() : "👤";
+      }
+    }
+
+    // Avatar upload
+    document.getElementById("avatarUpload").addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const avatarData = event.target.result;
+          localStorage.setItem("avatar", avatarData);
+          document.getElementById("profilePic").innerHTML = `<img src="${avatarData}" alt="Avatar">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Dark mode
+    const darkModeToggle = document.getElementById("darkMode");
+    if (localStorage.getItem("theme") === "light") {
+      darkModeToggle.checked = true;
+      setLightMode();
+    }
+    darkModeToggle.addEventListener("change", function() {
+      if (darkModeToggle.checked) {
+        localStorage.setItem("theme", "light");
+        setLightMode();
+      } else {
+        localStorage.setItem("theme", "dark");
+        setDarkMode();
+      }
+    });
+
+    function setLightMode() {
+      document.body.style.color = "#000";
+      document.querySelector(".profile-box").style.background = "rgba(255,255,255,0.9)";
+    }
+    function setDarkMode() {
+      document.body.style.color = "#fff";
+      document.querySelector(".profile-box").style.background = "rgba(26,26,26,0.85)";
+    }
+
+    // Edit profile
+    function editProfile() {
+      const newName = prompt("Enter new name:", user.name);
+      const newEmail = prompt("Enter new email:", user.email);
+      if (newName && newEmail) {
+        user.name = newName;
+        user.email = newEmail;
+        localStorage.setItem("user", JSON.stringify(user));
+        document.getElementById("profileEmail").textContent = user.email;
+        document.getElementById("userTitle").textContent = user.name;
+        alert("✅ Profile updated (local only).");
+      }
+    }
+
+    // Payment simulation
+    // Payment simulation
+function payNow() {
+  // Simulate successful payment
+  localStorage.setItem("paid", "true");
+
+  alert("✅ Payment successful! All premium courses are now unlocked.");
+}
+
+    function logout() {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("avatar");
+      localStorage.removeItem("theme");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
